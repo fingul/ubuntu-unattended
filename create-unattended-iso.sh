@@ -14,8 +14,7 @@ download_location="http://ftp.daumkakao.com/ubuntu-releases/14.04/"     # locati
 new_iso_name="${download_file}.unattended.iso"   # filename of the new iso file to be created
 autostart=true
 github_repo="https://github.com/fingul/ubuntu-unattended/raw/master"
-lvmtype="guided"
-
+seed_file="guided-lvm.seed"
 # define spinner function for slow tasks
 # courtesy of http://fitnr.com/showing-a-bash-spinner.html
 spinner()
