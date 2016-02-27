@@ -22,14 +22,9 @@ This script has been tested on and with these two versions as well, but I see no
 * From your command line, run the following commands:
 
 ```
-$ git clione https://github.com/hvanderlaan/ubuntu-unattened
-$ sudo ./create-unattended-iso.sh
-```
-or
-```
-$ wget https://raw.githubusercontent.com/hvanderlaan/ubuntu-unattended/master/create-unattended-iso.sh
-$ chmod 0744 create-unattended-iso.sh
-$ sudo ./create-unattended-iso.sh
+sudo apt-get install -y git
+git clone https://github.com/fingul/ubuntu-unattened
+sudo ./create-unattended-iso.sh
 ```
 
 * Choose which version you would like to remaster:
@@ -105,13 +100,13 @@ This script does a bunch of stuff, here's the quick walk-through:
  finished remastering your ubuntu iso file
  the new file is located at: /tmp/ubuntu-14.04.3-server-amd64-unattended.iso
  your username is: haraldvdlaan
- your password is: 
+ your password is:
  your hostname is: ubuntu
  your timezone is: Europe/Amsterdam
 ```
 
 ### Once Ubuntu is installed ...
 
-Just fire off the init.sh script in your user's home directory to complete the installation. 
+Just fire off the init.sh script in your user's home directory to complete the installation.
 
-```$ sudo ~/init.sh``` 
+```$ sudo ~/init.sh```

@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
 # file names & paths
-tmp="/tmp"  # destination folder to store the final iso file
+tmp="${tmp:-/tmp}"  # destination folder to store the final iso file
+hostname="${hostname:-ubuntu.alpha.omega}"
+timezone="${timezone:-Asia/Seoul}"
+username="${username:-username}"
+password="${password:-password}"
+mirror="${mirror:-ftp.daumkakao.com}"
+bootable="${bootable:-yes}"
+download="${download:-http://ftp.daumkakao.com/ubuntu-releases/}"
+download_file="ubuntu-14.04.3-server-amd64.iso"             # filename of the iso to be downloaded
+download_location="http://ftp.daumkakao.com/ubuntu-releases/14.04/"     # location of the file to be downloaded
+new_iso_name="${download_file}.unattended.iso"   # filename of the new iso file to be created
+autostart=true
+github_repo="https://github.com/fingul/ubuntu-unattended/raw/master"
+lvmtype="guided"
 
 # define spinner function for slow tasks
 # courtesy of http://fitnr.com/showing-a-bash-spinner.html
@@ -48,11 +61,11 @@ function program_is_installed {
 }
 
 # print a pretty header
-echo 
+echo
 echo " +---------------------------------------------------+"
 echo " |            UNATTENDED UBUNTU ISO MAKER            |"
 echo " +---------------------------------------------------+"
-echo 
+echo
 
 if [ ${UID} -ne 0 ]; then
     echo " [-] This script must be runned with root privileges."
@@ -60,75 +73,6 @@ if [ ${UID} -ne 0 ]; then
     echo
     exit 1
 fi
-
-# ask whether to include vmware tools or not
-while true; do
-    echo " which ubuntu edition would you like to remaster:"
-    echo
-    echo "  [1] Ubuntu 14.04.3 LTS Server i386  - Trusty Tahr"
-    echo "  [2] Ubuntu 14.04.3 LTS Server amd64 - Trusty Tahr"
-    echo "  [3] Ubuntu 15.10 Server i386 - Wily Werewolf"
-    echo "  [4] Ubuntu 15.10 Server amd64 - Wily Werewolf"
-    echo
-    read -p " please enter your preference: [1|2|3|4]: " ubver
-    case $ubver in
-        [1]* )  download_file="ubuntu-14.04.3-server-i386.iso"            # filename of the iso to be downloaded
-                download_location="http://releases.ubuntu.com/14.04.3/"   # location of the file to be downloaded
-                new_iso_name="ubuntu-14.04.3-server-i386-unattended.iso"  # filename of the new iso file to be created
-                break;;
-        [2]* )  download_file="ubuntu-14.04.3-server-amd64.iso"           # filename of the iso to be downloaded
-                download_location="http://releases.ubuntu.com/14.04.3/"   # location of the file to be downloaded
-                new_iso_name="ubuntu-14.04.3-server-amd64-unattended.iso" # filename of the new iso file to be created
-                break;;
-        [3]* )  download_file="ubuntu-15.10-server-i386.iso"              # filename of the iso to be downloaded
-                download_location="http://releases.ubuntu.com/15.10/"     # location of the file to be downloaded
-                new_iso_name="ubuntu-15.10-server-i386-unattended.iso"    # filename of the new iso file to be created
-                break;;
-        [4]* )  download_file="ubuntu-15.10-server-amd64.iso"             # filename of the iso to be downloaded
-                download_location="http://releases.ubuntu.com/15.10/"     # location of the file to be downloaded
-                new_iso_name="ubuntu-15.10-server-amd64-unattended.iso"   # filename of the new iso file to be created
-                break;;
-        * ) echo " please answer [1], [2], [3] or [4]";;
-    esac
-done
-
-# ask the user questions about his/her preferences
-if ! timezone=`cat /etc/timezone 2> /dev/null`; then
-    timezone="Europe/Amsterdam"
-fi
-read -ep " please enter your preferred timezone  : " -i $timezone timezone
-read -ep " please enter your preferred hostname  : " -i "ubuntu" hostname
-read -ep " please enter your preferred username  : " -i "`logname`" username
-read -ep " please enter lvm type (guided/expert) : " -i "expert" lvmtype
-
-# ask user with type of lvm to use
-while true; do
-	case ${lvmtype} in
-		guided) seed_file="guided-lvm.seed" ; break ;;
-		expert) seed_file="expert-lvm.seed" ; break ;;
-		* ) echo " please enter only guided or expert." ;;
-	esac
-done
-
-# check if the passwords match to prevent headaches
-while true; do
-    read -sp " please enter your preferred password: " password
-    printf "\n"
-    read -sp " confirm your preferred password: " password2
-    printf "\n"
-    if [[ "$password" != "$password2" ]]; then
-        echo " your passwords do not match; please try again"
-        echo
-    else
-        break
-    fi
-done
-
-read -p " autostart installation on boot (y/n)?" choice
-case "$choice" in 
-  y|Y ) autostart=true;;
-  * ) autostart=false;;
-esac
 
 # download the ubunto iso
 cd $tmp
@@ -140,7 +84,7 @@ fi
 # download lvm seed file
 if [[ ! -f $tmp/$seed_file ]]; then
     echo -n " downloading $seed_file: "
-    download "https://github.com/hvanderlaan/ubuntu-unattended/raw/master/$seed_file"
+    download "$github_repo/$seed_file"
 fi
 
 # install required packages
@@ -150,7 +94,7 @@ if [ $(program_is_installed "mkpasswd") -eq 0 ] || [ $(program_is_installed "mki
     spinner $!
     (apt-get -y install whois genisoimage > /dev/null 2>&1) &
     spinner $!
-    
+
     # thanks to rroethof
     if [ -f /usr/bin/mkisofs ]; then
       ln -s /usr/bin/genisoimage /usr/bin/mkisofs
@@ -184,7 +128,7 @@ if $autostart ; then
 fi
 
 # set late command
-late_command="chroot /target wget -O /home/$username/init.sh https://github.com/hvanderlaan/ubuntu-unattended/raw/master/init.sh ;\
+late_command="chroot /target wget -O /home/$username/init.sh $github_repo/init.sh ;\
     chroot /target chmod +x /home/$username/init.sh ;"
 
 # copy the netson seed file to the iso
@@ -225,7 +169,7 @@ umount $tmp/iso_org
 rm -rf $tmp/iso_new
 rm -rf $tmp/iso_org
 
-# print info to user  
+# print info to user
 echo " -----"
 echo " finished remastering your ubuntu iso file"
 echo " the new file is located at: $tmp/$new_iso_name"
