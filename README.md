@@ -22,10 +22,12 @@ This script has been tested on and with these two versions as well, but I see no
 * From your command line, run the following commands:
 
 ```
+sudo apt-get update -y
 sudo apt-get install -y git
 git clone https://github.com/fingul/ubuntu-unattended.git
 cd ubuntu-unattended
-sudo tmp=/vagrant username=m password=m ./create-unattended-iso.sh
+sudo username=m password=m ./create-unattended-iso.sh
+cp /tmp/*unattended.iso /vagrant
 ```
 
 * Choose which version you would like to remaster:
